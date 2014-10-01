@@ -21,13 +21,26 @@ static void pegvm_error(const char *errmsg)
     exit(EXIT_FAILURE);
 }
 
-int main(int argc, char * const argv[])
+static int main2(const char *syntax_file, int argc, char **argv)
 {
     ParserContext context;
-    GC_INIT();
+    ParserContext_Init(&context);
+    if (ParserContext_LoadSyntax(&context, syntax_file)) {
+        pegvm_error("invalid bytecode");
+    }
+    if (ParserContext_ParseFiles(&context, argc, (char **)argv)) {
+        pegvm_error(context.last_error);
+    }
+    ParserContext_Dispose(&context);
+    return 0;
+}
+
+int main(int argc, char * const argv[])
+{
     const char *syntax_file = NULL;
     const char *orig_argv0 = argv[0];
     int opt;
+    GC_INIT();
     while ((opt = getopt(argc, argv, "f:")) != -1) {
         switch (opt) {
         case 'f':
@@ -45,13 +58,5 @@ int main(int argc, char * const argv[])
     if (argc == 0) {
         pegvm_usage(orig_argv0);
     }
-    ParserContext_Init(&context);
-    if (ParserContext_LoadSyntax(&context, syntax_file)) {
-        pegvm_error("invalid bytecode");
-    }
-    if (ParserContext_ParseFiles(&context, argc, (char **)argv)) {
-        pegvm_error(context.last_error);
-    }
-    ParserContext_Dispose(&context);
-    return 0;
+    return main2(syntax_file, argc, (char **)argv);
 }

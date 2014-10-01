@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#define DUMP_PARSED_NODE 0
+#define DUMP_PARSED_NODE 1
 #define PEGVM_DEBUG 0
 static inline void PUSH_IP(ParserContext *context, PegVMInstruction *ip);
 
